@@ -933,9 +933,46 @@ console.log("Scheduled");`,
       
     } else {
       // Original line-by-line parsing for non-fetch code
+      const pendingTasks: { line: number; delay: number; callback: string; messages: string[] }[] = [];
+      const pendingMicrotasks: { line: number; callback: string; messages: string[] }[] = [];
+      let activeCallback: { kind: 'task' | 'microtask'; line: number; delay: number; messages: string[]; callback: string } | null = null;
+      let callbackDepth = 0;
+
+      const countChar = (value: string, char: string) =>
+        (value.match(new RegExp(`\\${char}`, 'g')) || []).length;
+
       lines.forEach((line, index) => {
         const trimmedLine = line.trim();
         const lineNum = index + 1;
+
+        if (activeCallback) {
+          if (trimmedLine.includes('console.log') || trimmedLine.includes('console.error')) {
+            activeCallback.messages.push(extractLogMessage(trimmedLine));
+          }
+
+          callbackDepth += countChar(trimmedLine, '{');
+          callbackDepth -= countChar(trimmedLine, '}');
+
+          if (callbackDepth <= 0) {
+            if (activeCallback.kind === 'task') {
+              pendingTasks.push({
+                line: activeCallback.line,
+                delay: activeCallback.delay,
+                callback: activeCallback.callback,
+                messages: activeCallback.messages
+              });
+            } else {
+              pendingMicrotasks.push({
+                line: activeCallback.line,
+                callback: activeCallback.callback,
+                messages: activeCallback.messages
+              });
+            }
+            activeCallback = null;
+            callbackDepth = 0;
+          }
+          return;
+        }
 
         if (!trimmedLine || trimmedLine.startsWith('//')) return;
 
@@ -960,9 +997,9 @@ console.log("Scheduled");`,
         }
         else if (trimmedLine.includes('setTimeout')) {
           const delayMatch = trimmedLine.match(/setTimeout\(.+,\s*(\d+)\)/);
-          const delay = delayMatch ? delayMatch[1] : '0';
+          const delay = delayMatch ? parseInt(delayMatch[1], 10) : 0;
           const callbackMatch = trimmedLine.match(/console\.log\(['"](.+)['"]\)/);
-          const callback = callbackMatch ? `console.log("${callbackMatch[1]}")` : 'callback';
+          const callback = callbackMatch ? `console.log("${callbackMatch[1]}")` : 'setTimeout callback';
           
           steps.push({ 
             action: 'addToStack', 
@@ -981,35 +1018,36 @@ console.log("Scheduled");`,
             action: 'removeFromStack',
             explanation: 'setTimeout registration complete'
           });
-          
-          steps.push({ 
-            action: 'moveToTaskQueue', 
-            from: 'webAPI', 
-            callback,
-            line: lineNum,
-            explanation: `Timer completed, callback moved to Task Queue`
-          });
-          steps.push({ 
-            action: 'checkEventLoop',
-            explanation: 'Event Loop picks task from queue'
-          });
-          
-          if (callbackMatch) {
-            steps.push({ 
-              action: 'addToStack', 
-              item: callback, 
-              execute: true, 
+
+          const hasBlock = trimmedLine.includes('{');
+          if (hasBlock) {
+            activeCallback = {
+              kind: 'task',
               line: lineNum,
-              explanation: `Executing callback: ${callback}`
-            });
-            steps.push({ 
-              action: 'log', 
-              message: callbackMatch[1],
-              explanation: `Output: ${callbackMatch[1]}`
-            });
-            steps.push({ 
-              action: 'removeFromStack',
-              explanation: 'Callback complete'
+              delay,
+              callback,
+              messages: []
+            };
+            if (callbackMatch) {
+              activeCallback.messages.push(callbackMatch[1]);
+            }
+            callbackDepth = countChar(trimmedLine, '{') - countChar(trimmedLine, '}');
+            if (callbackDepth <= 0) {
+              pendingTasks.push({
+                line: activeCallback.line,
+                delay: activeCallback.delay,
+                callback: activeCallback.callback,
+                messages: activeCallback.messages
+              });
+              activeCallback = null;
+              callbackDepth = 0;
+            }
+          } else {
+            pendingTasks.push({
+              line: lineNum,
+              delay,
+              callback,
+              messages: callbackMatch ? [callbackMatch[1]] : []
             });
           }
         }
@@ -1033,33 +1071,132 @@ console.log("Scheduled");`,
             action: 'removeFromStack',
             explanation: 'Promise setup complete'
           });
-          
-          steps.push({ 
-            action: 'processMicroTasks',
-            line: lineNum,
-            explanation: 'Processing microtasks (runs before Task Queue)'
-          });
-          
-          if (callbackMatch) {
-            steps.push({ 
-              action: 'addToStack', 
-              item: callback, 
-              execute: true, 
+
+          const hasBlock = trimmedLine.includes('{');
+          if (hasBlock) {
+            activeCallback = {
+              kind: 'microtask',
               line: lineNum,
-              explanation: `Executing microtask: ${callback}`
-            });
-            steps.push({ 
-              action: 'log', 
-              message: callbackMatch[1],
-              explanation: `Output: ${callbackMatch[1]}`
-            });
-            steps.push({ 
-              action: 'removeFromStack',
-              explanation: 'Microtask complete'
+              delay: 0,
+              callback,
+              messages: []
+            };
+            if (callbackMatch) {
+              activeCallback.messages.push(callbackMatch[1]);
+            }
+            callbackDepth = countChar(trimmedLine, '{') - countChar(trimmedLine, '}');
+            if (callbackDepth <= 0) {
+              pendingMicrotasks.push({
+                line: activeCallback.line,
+                callback: activeCallback.callback,
+                messages: activeCallback.messages
+              });
+              activeCallback = null;
+              callbackDepth = 0;
+            }
+          } else {
+            pendingMicrotasks.push({
+              line: lineNum,
+              callback,
+              messages: callbackMatch ? [callbackMatch[1]] : []
             });
           }
         }
       });
+
+      if (pendingMicrotasks.length > 0) {
+        steps.push({
+          action: 'checkEventLoop',
+          explanation: 'Call Stack empty → Event Loop processes Microtask Queue first'
+        });
+        steps.push({
+          action: 'processMicroTasks',
+          explanation: 'Processing microtasks (Promises have higher priority)'
+        });
+        pendingMicrotasks.forEach((task) => {
+          if (task.messages.length === 0) {
+            steps.push({
+              action: 'addToStack',
+              item: task.callback,
+              execute: true,
+              line: task.line,
+              explanation: `Executing microtask: ${task.callback}`
+            });
+            steps.push({
+              action: 'removeFromStack',
+              explanation: 'Microtask complete'
+            });
+            return;
+          }
+          task.messages.forEach((message) => {
+            steps.push({
+              action: 'addToStack',
+              item: `console.log("${message}")`,
+              execute: true,
+              line: task.line,
+              explanation: `Executing microtask: console.log("${message}")`
+            });
+            steps.push({
+              action: 'log',
+              message,
+              explanation: `Output: ${message}`
+            });
+            steps.push({
+              action: 'removeFromStack',
+              explanation: 'Microtask complete'
+            });
+          });
+        });
+      }
+
+      if (pendingTasks.length > 0) {
+        const orderedTasks = [...pendingTasks].sort((a, b) => a.delay - b.delay || a.line - b.line);
+        orderedTasks.forEach((task) => {
+          steps.push({
+            action: 'moveToTaskQueue',
+            from: 'webAPI',
+            callback: task.callback,
+            line: task.line,
+            explanation: 'Timer completed, callback moved to Task Queue'
+          });
+          steps.push({
+            action: 'checkEventLoop',
+            explanation: 'Event Loop picks next task from Task Queue'
+          });
+          if (task.messages.length === 0) {
+            steps.push({
+              action: 'addToStack',
+              item: task.callback,
+              execute: true,
+              line: task.line,
+              explanation: `Executing callback: ${task.callback}`
+            });
+            steps.push({
+              action: 'removeFromStack',
+              explanation: 'Callback complete'
+            });
+            return;
+          }
+          task.messages.forEach((message) => {
+            steps.push({
+              action: 'addToStack',
+              item: `console.log("${message}")`,
+              execute: true,
+              line: task.line,
+              explanation: `Executing callback: console.log("${message}")`
+            });
+            steps.push({
+              action: 'log',
+              message,
+              explanation: `Output: ${message}`
+            });
+            steps.push({
+              action: 'removeFromStack',
+              explanation: 'Callback complete'
+            });
+          });
+        });
+      }
     }
 
     if (steps.length === 0) {
