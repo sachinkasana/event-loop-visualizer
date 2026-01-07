@@ -1,6 +1,6 @@
 # JavaScript Event Loop Visualizer 🔄
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://your-domain.vercel.app)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://js-event-loop-visualizer-one.vercel.app/)
 [![PWA Ready](https://img.shields.io/badge/PWA-ready-blue.svg)](https://web.dev/progressive-web-apps/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

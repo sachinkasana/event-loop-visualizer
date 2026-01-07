@@ -6,7 +6,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://event-loop-visualizer.vercel.app/sitemap.xml
+Sitemap: https://js-event-loop-visualizer-one.vercel.app/sitemap.xml
 
 # Crawl-delay (optional, be nice to servers)
 Crawl-delay: 1
