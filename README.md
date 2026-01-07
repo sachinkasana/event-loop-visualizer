@@ -33,7 +33,6 @@ An interactive, educational visualization tool to understand how JavaScript's ev
 - 📱 **PWA Support** - Install as app, works offline
 - ⌨️ **Keyboard Shortcuts** - Full keyboard navigation
 - 🔍 **SEO Optimized** - Meta tags, Open Graph, structured data
-- 📊 **Analytics Ready** - Google Analytics 4 integration
 - ♿ **Accessible** - ARIA labels and screen reader support
 
 ## 🚀 Quick Start
@@ -156,49 +155,6 @@ The app uses a slate/blue monochromatic theme. Key colors in Tailwind classes:
 - Primary: `bg-blue-600`, `text-blue-400`
 - Accent: `bg-amber-500`, `bg-cyan-500`, `bg-emerald-500`
 
-## 📊 Analytics Setup
-
-Replace `GA_MEASUREMENT_ID` in `index.html` with your Google Analytics 4 ID:
-
-```html
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-```
-
-## 🌐 Deployment
-
-### Vercel (Recommended)
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-```
-
-### Netlify
-
-```bash
-# Build
-npm run build
-
-# Deploy dist folder to Netlify
-```
-
-### Docker
-
-```dockerfile
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-```
 
 ## 🤝 Contributing
 
@@ -219,12 +175,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sachin Kasana**
 - Website: [sachinkasana-dev.vercel.app](https://sachinkasana-dev.vercel.app/)
 - GitHub: [@sachinkasana](https://github.com/sachinkasana)
-
-## 🙏 Acknowledgments
-
-- Inspired by [Philip Roberts' talk](https://www.youtube.com/watch?v=8aGhZQkoFbQ) "What the heck is the event loop anyway?"
-- [JavaScript.info](https://javascript.info/event-loop) for excellent documentation
-- [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop) for reference
 
 ---
 
