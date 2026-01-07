@@ -10,17 +10,6 @@
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
-    <!-- Consent Mode (default denied until user choice) -->
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        ad_storage: 'denied',
-        analytics_storage: 'denied',
-        wait_for_update: 500
-      });
-    </script>
-
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -150,52 +139,6 @@
       });
     </script>
 
-    <style>
-      .consent-banner {
-        position: fixed;
-        left: 16px;
-        right: 16px;
-        bottom: 16px;
-        background: rgba(15, 23, 42, 0.95);
-        color: #e2e8f0;
-        border: 1px solid rgba(148, 163, 184, 0.3);
-        border-radius: 12px;
-        padding: 16px;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .consent-banner__actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .consent-button {
-        border: 1px solid transparent;
-        border-radius: 10px;
-        padding: 8px 14px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .consent-accept {
-        background: #22c55e;
-        color: #0f172a;
-      }
-      .consent-reject {
-        background: transparent;
-        color: #e2e8f0;
-        border-color: rgba(148, 163, 184, 0.5);
-      }
-      @media (min-width: 768px) {
-        .consent-banner {
-          left: auto;
-          right: 24px;
-          bottom: 24px;
-          max-width: 420px;
-        }
-      }
-    </style>
     
     <!-- Primary Meta Tags -->
     <title>JavaScript Event Loop Visualizer | Learn Call Stack, Web APIs, Microtasks & Task Queue</title>
@@ -260,52 +203,6 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
-    <div id="cookie-consent" class="consent-banner" hidden>
-      <div>We use analytics cookies to understand usage and improve the app.</div>
-      <div class="consent-banner__actions">
-        <button id="cookie-accept" class="consent-button consent-accept" type="button">Accept</button>
-        <button id="cookie-reject" class="consent-button consent-reject" type="button">Reject</button>
-      </div>
-    </div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      (function() {
-        var banner = document.getElementById('cookie-consent');
-        if (!banner) return;
-        var acceptButton = document.getElementById('cookie-accept');
-        var rejectButton = document.getElementById('cookie-reject');
-
-        function updateConsent(status) {
-          var storageState = status === 'granted' ? 'granted' : 'denied';
-          if (typeof gtag === 'function') {
-            gtag('consent', 'update', {
-              ad_storage: storageState,
-              analytics_storage: storageState
-            });
-          }
-        }
-
-        function setChoice(status) {
-          localStorage.setItem('analytics_consent', status);
-          updateConsent(status);
-          banner.hidden = true;
-        }
-
-        var storedChoice = localStorage.getItem('analytics_consent');
-        if (storedChoice === 'granted' || storedChoice === 'denied') {
-          updateConsent(storedChoice);
-          banner.hidden = true;
-        } else {
-          banner.hidden = false;
-        }
-
-        acceptButton.addEventListener('click', function() {
-          setChoice('granted');
-        });
-        rejectButton.addEventListener('click', function() {
-          setChoice('denied');
-        });
-      })();
-    </script>
   </body>
 </html>
