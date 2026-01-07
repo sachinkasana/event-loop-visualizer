@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Preconnect hints for faster loading -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/favicon.svg" color="#3b82f6" />
+    <meta name="msapplication-TileColor" content="#0f172a" />
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <!-- Replace GA_MEASUREMENT_ID with your actual Google Analytics Measurement ID (e.g., G-XXXXXXXXXX) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      
+      // Basic configuration
+      gtag('config', 'GA_MEASUREMENT_ID', {
+        page_title: document.title,
+        page_location: window.location.href,
+        send_page_view: true
+      });
+
+      // Custom event tracking functions for the app
+      window.trackEvent = function(eventName, eventParams) {
+        gtag('event', eventName, eventParams);
+      };
+
+      // Track example selection
+      window.trackExampleSelect = function(exampleName) {
+        gtag('event', 'select_example', {
+          event_category: 'engagement',
+          event_label: exampleName,
+          example_name: exampleName
+        });
+      };
+
+      // Track visualization controls
+      window.trackVisualizationAction = function(action) {
+        gtag('event', 'visualization_control', {
+          event_category: 'interaction',
+          event_label: action,
+          action_type: action
+        });
+      };
+
+      // Track custom code usage
+      window.trackCustomCode = function() {
+        gtag('event', 'custom_code_run', {
+          event_category: 'engagement',
+          event_label: 'custom_code',
+          value: 1
+        });
+      };
+
+      // Track step navigation
+      window.trackStepNavigation = function(stepNumber, totalSteps) {
+        gtag('event', 'step_navigation', {
+          event_category: 'learning_progress',
+          step_number: stepNumber,
+          total_steps: totalSteps,
+          completion_percentage: Math.round((stepNumber / totalSteps) * 100)
+        });
+      };
+
+      // Track completion
+      window.trackCompletion = function(exampleName) {
+        gtag('event', 'example_completed', {
+          event_category: 'achievement',
+          event_label: exampleName,
+          example_name: exampleName,
+          value: 1
+        });
+      };
+
+      // Track time spent (will be called on page unload)
+      window.trackTimeSpent = function(seconds) {
+        gtag('event', 'time_spent', {
+          event_category: 'engagement',
+          event_label: 'session_duration',
+          value: seconds
+        });
+      };
+
+      // Track outbound links
+      document.addEventListener('click', function(e) {
+        var link = e.target.closest('a');
+        if (link && link.hostname !== window.location.hostname) {
+          gtag('event', 'click', {
+            event_category: 'outbound',
+            event_label: link.href,
+            transport_type: 'beacon'
+          });
+        }
+      });
+
+      // Track scroll depth
+      var scrollDepthTracked = { 25: false, 50: false, 75: false, 100: false };
+      window.addEventListener('scroll', function() {
+        var scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+        [25, 50, 75, 100].forEach(function(depth) {
+          if (scrollPercent >= depth && !scrollDepthTracked[depth]) {
+            scrollDepthTracked[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+
+      // Track session start time for duration calculation
+      var sessionStartTime = Date.now();
+      window.addEventListener('beforeunload', function() {
+        var sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
+        window.trackTimeSpent(sessionDuration);
+      });
+    </script>
+
+    <!-- Google Tag Manager (optional - for advanced tracking) -->
+    <!-- Replace GTM-XXXXXXX with your GTM Container ID if you use GTM -->
+    <!--
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    -->
+    
+    <!-- Primary Meta Tags -->
+    <title>JavaScript Event Loop Visualizer | Learn Call Stack, Web APIs, Microtasks & Task Queue</title>
+    <meta name="title" content="JavaScript Event Loop Visualizer | Learn Call Stack, Web APIs, Microtasks & Task Queue" />
+    <meta name="description" content="Interactive JavaScript Event Loop Visualizer. Learn how the Call Stack, Web APIs, Microtask Queue, and Task Queue work together. Understand Promises, setTimeout, async/await with step-by-step animations." />
+    <meta name="keywords" content="JavaScript, Event Loop, Call Stack, Web APIs, Microtask Queue, Task Queue, Promises, setTimeout, async await, JavaScript tutorial, learn JavaScript, event loop visualizer, JavaScript animation, callback queue, microtasks, macrotasks, browser runtime, JavaScript runtime, execution context, asynchronous JavaScript, JS event loop, JavaScript concurrency, single threaded JavaScript" />
+    <meta name="author" content="Sachin Kasana" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sachinkasana-dev.vercel.app/" />
+    <meta property="og:title" content="JavaScript Event Loop Visualizer | Interactive Learning Tool" />
+    <meta property="og:description" content="Master the JavaScript Event Loop with this interactive visualizer. See how Call Stack, Web APIs, Microtasks, and Task Queue work in real-time with step-by-step animations." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:site_name" content="JavaScript Event Loop Visualizer" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://sachinkasana-dev.vercel.app/" />
+    <meta property="twitter:title" content="JavaScript Event Loop Visualizer | Interactive Learning Tool" />
+    <meta property="twitter:description" content="Master the JavaScript Event Loop with this interactive visualizer. See how Call Stack, Web APIs, Microtasks, and Task Queue work in real-time." />
+    <meta property="twitter:image" content="/og-image.png" />
+    
+    <!-- Additional SEO -->
+    <link rel="canonical" href="https://sachinkasana-dev.vercel.app/" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Event Loop Visualizer" />
+    
+    <!-- Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "JavaScript Event Loop Visualizer",
+      "description": "Interactive tool to visualize and learn how the JavaScript Event Loop works including Call Stack, Web APIs, Microtask Queue, and Task Queue.",
+      "url": "https://sachinkasana-dev.vercel.app/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any",
+      "author": {
+        "@type": "Person",
+        "name": "Sachin Kasana",
+        "url": "https://sachinkasana-dev.vercel.app/"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "JavaScript, Event Loop, Call Stack, Web APIs, Promises, setTimeout, async await, tutorial"
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
