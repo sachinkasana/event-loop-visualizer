@@ -7,7 +7,7 @@ function App() {
       <EventLoopVisualizer />
       <Analytics />
     </>
-  )
+  );
 }
 
 export default App
