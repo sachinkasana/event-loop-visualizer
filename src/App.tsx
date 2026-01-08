@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import EventLoopVisualizer from './components/EventLoopVisualizer'
 
 function App() {
@@ -6,6 +7,7 @@ function App() {
     <>
       <EventLoopVisualizer />
       <Analytics />
+      <SpeedInsights />
     </>
   );
 }
